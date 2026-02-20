@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import streamlit as st
 import pandas as pd
+import os
 import joblib
 
 # โหลดโมเดลที่ train ไว้แล้ว
@@ -54,3 +55,18 @@ fig3, ax3 = plt.subplots()
 sns.boxplot(x=data['final_grade'], y=data['attendance'], ax=ax3)
 ax3.set_xticklabels(['Fail','Pass'])
 st.pyplot(fig3)
+
+if os.path.exists("model.pkl"):
+    model = joblib.load("model.pkl")
+else:
+    from sklearn.ensemble import RandomForestRegressor
+    import pandas as pd
+    
+    data = pd.read_csv("student_data.csv")
+    X = data[['study_hours', 'attendance']]
+    y = data['grade']
+    
+    model = RandomForestRegressor()
+    model.fit(X, y)
+    
+    joblib.dump(model, "model.pkl")
