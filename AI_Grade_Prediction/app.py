@@ -1,10 +1,16 @@
+import matplotlib.pyplot as plt
+import seaborn as sns
 import streamlit as st
 import pandas as pd
 import joblib
 
+# โหลดโมเดลที่ train ไว้แล้ว
 model = joblib.load("model.pkl")
+data = pd.read_csv("student_data.csv")
+data['final_grade'] = data['final_grade'].map({'Pass': 1, 'Fail': 0})
 
 st.title("🎓 AI ทำนายผลการเรียน")
+st.write("กรอกข้อมูลพฤติกรรมการเรียนเพื่อทำนายผล")
 
 attendance = st.slider("Attendance (%)", 0, 100, 75)
 study_hours = st.slider("Study Hours per Day", 0, 10, 2)
@@ -24,3 +30,27 @@ if st.button("Predict"):
         st.error("⚠️ มีความเสี่ยงตก")
 
     st.write("ความน่าจะเป็นผ่าน:", round(probability[0][1]*100,2), "%")
+
+st.subheader("📊 สัดส่วนผลการเรียน")
+
+fig1, ax1 = plt.subplots()
+data['final_grade'].value_counts().plot(kind='bar', ax=ax1)
+ax1.set_xticklabels(['Fail','Pass'], rotation=0)
+st.pyplot(fig1)
+
+st.subheader("📈 ความสำคัญของตัวแปร")
+
+feature_importance = model.feature_importances_
+
+fig2, ax2 = plt.subplots()
+ax2.bar(["attendance","study_hours","assignment_score","late_submit"],
+        feature_importance)
+ax2.set_ylabel("Importance Score")
+st.pyplot(fig2)
+
+st.subheader("📉 Attendance vs Grade")
+
+fig3, ax3 = plt.subplots()
+sns.boxplot(x=data['final_grade'], y=data['attendance'], ax=ax3)
+ax3.set_xticklabels(['Fail','Pass'])
+st.pyplot(fig3)
